@@ -35,6 +35,8 @@ API_SYNC_SOURCE = pkg/hook/context.go
 API_SYNC_TARGET = tool/internal/instrument/api.tmpl
 TOOLS_DIR = .tools
 GO_VERSION = 1.26
+# Pin the bundler's Go standard library: gzip output can vary by Go version.
+BUNDLE_GOTOOLCHAIN = go1.26.10
 INTEGRATION_TEST_RUN ?= .
 TOOL_COVERAGE_THRESHOLD ?= 68
 PKG_COVERAGE_THRESHOLD ?= 70
@@ -97,8 +99,8 @@ BUNDLE = $(TOOLS)/bundle
 # make never rebuilds an existing .bin/bundle, so editing the bundle tool (or
 # switching to a branch that changed it) silently keeps using the stale binary
 # and `make package` then writes an archive that fails Verify Bundle in CI.
-$(BUNDLE): $(wildcard $(TOOLS_DIR)/bundle/*.go) $(TOOLS_DIR)/bundle/go.mod | $(TOOLS)
-	cd $(TOOLS_DIR)/bundle && GOWORK=off go build -o $@
+$(BUNDLE): Makefile $(wildcard $(TOOLS_DIR)/bundle/*.go) $(TOOLS_DIR)/bundle/go.mod | $(TOOLS)
+	cd $(TOOLS_DIR)/bundle && GOWORK=off GOTOOLCHAIN=$(BUNDLE_GOTOOLCHAIN) go build -o $@
 
 EMBEDMD = $(TOOLS)/embedmd
 $(EMBEDMD): PACKAGE=github.com/campoy/embedmd/v2
